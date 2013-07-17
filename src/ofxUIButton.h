@@ -113,9 +113,12 @@ public:
             *value = *_value; 
         }
         
-        setValue(*_value);         
-    }
+        setValue(*_value);
         
+        //borg
+        uid = ofToString(ofGetElapsedTimef())+"_"+ofToString(ofRandomf());
+    }
+    
     virtual void draw() 
     {
         ofPushStyle(); 

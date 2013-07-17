@@ -139,6 +139,9 @@ public:
 		label->setRectParent(rect); 	
         label->setEmbedded(true);        
         increment = fabs(max - min) / 10.0;
+        
+        //borg
+        uid = ofToString(ofGetElapsedTimef())+"_"+ofToString(ofRandomf());
     }
     
     virtual void drawFill()

@@ -28,6 +28,9 @@
 #include "ofMain.h"
 #include "ofxUI.h"
 
+
+class ofxUIWidget;
+
 class ofxUIEventArgs : public ofEventArgs
 {   
 public:

@@ -1,3 +1,14 @@
+Borg mods:
+-added individual widget events eg.
+saveBtn = new ofxUIButton("SAVE", false, dim,dim, dim,dim*4);
+ofAddListener(saveBtn->widgetEvent,this,&ChordProgressorView::save);
+
+-added individual unique ids (uid) for widgets that remain unchanging to be able to identify the sender in a global event setup with several widgets with the same name
+
+
+ 
+
+//////////////////
 ofxUI is an addon for openFrameworks (version 07) that easily allows for the creation of user interfaces aka GUIs. ofxUI also takes care of widget layout, spacing, font loading, saving and loading settings, and widget callbacks. ofxUI can be easily customized (colors, font & widget sizes, padding, layout, etc).
 
 ofxUI contains a collection of minimally designed graphical user interface (GUI) widgets (Buttons, Toggles, Image Buttons, Label Buttons, Button Matrices, Drop Down Menus, Sliders (rotary, range, vertical, horizontal), Number Dials, 2D Pads, Labels, FPS labels, and Text Input Areas). 

@@ -161,6 +161,9 @@ public:
         float horizontalRange = abs(rangeX.x - rangeX.y);
         float verticalRange = abs(rangeY.x - rangeY.y);
         increment = MIN(horizontalRange, verticalRange) / 10.0;
+        
+        //borg
+        uid = ofToString(ofGetElapsedTimef())+"_"+ofToString(ofRandomf());
     }
     
     virtual void update()

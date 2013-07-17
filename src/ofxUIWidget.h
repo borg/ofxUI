@@ -20,10 +20,15 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  SOFTWARE.
  
+ 
+ Borg:
+ For set colour issues, make sure to set fill colour after widget been added
+ 
  **********************************************************************************/
 
 #ifndef OFXUI_WIDGET
 #define OFXUI_WIDGET
+
 
 class ofxUIWidget           
 {
@@ -31,6 +36,7 @@ public:
     ofxUIWidget() 
     {
         name = string("base");
+      //  name = "base";
         ID = -1;
         hit = false; 
         visible = true; 
@@ -59,6 +65,15 @@ public:
         
         embedded = false;
 		modal = false;
+        
+        
+        //borg
+        //uid = "undefined";
+        uid = ofToString(ofGetElapsedTimef())+"_"+ofToString(ofRandomf());
+       // value = "undefined";
+        
+        GUIevent = new ofxUIEventArgs(this);
+        
     }
     
     virtual ~ofxUIWidget() 
@@ -426,17 +441,40 @@ public:
         }
     }
     
-	virtual string& getName()
-	{
+	virtual string& getName(){
+        
 		return name;
 	}
 	
 	virtual void triggerEvent(ofxUIWidget *child)
 	{
+        GUIevent->widget = child;
+        
 		if(parent != NULL)
 		{
-			parent->triggerEvent(child); 
+			parent->triggerEvent(child);
+            
+            if(child->state == OFX_UI_STATE_OVER){
+                //you are listening to the parent widget event, eg. dropdown lists, radio btns
+                //TODO: Complete for all widgets
+                ofNotifyEvent(parent->widgetEvent,*GUIevent,this);
+          //      cout<<"parent trigger widgetEvent "<<child<<" parent "<<parent<<endl;
+            }
 		}
+        //TODO: Fix double fire here
+        if(child->state == OFX_UI_STATE_OVER){
+            //eg. buttons don't have parents
+            ofNotifyEvent(widgetEvent,*GUIevent,this);
+        //    cout<<"child trigger widgetEvent "<<child<<" parent "<<parent<<endl;
+        }
+        
+        
+       // cout<<"trigger event "<<child<<endl;
+        //borg
+        //added to be able to listen to child events
+        //TODO: Add click, over and down events 
+        
+        
 	}
     
     virtual void triggerSelf()
@@ -492,6 +530,31 @@ public:
     {
         return ID;
     }
+    
+    /*
+     Borg
+     Add unique fixed ids that don't change or get updated in dynamic widgets
+     */
+    void setUID(string s){
+        uid = s;
+    }
+    string getUID(){
+
+        return uid;
+    }
+    
+    /*
+     //not sure how value is used by Reza
+    void setValue(string s){
+        value = s;
+    }
+    string getValue(){
+        return value;
+    }
+     */
+    
+    
+    
     
     virtual void addWidget(ofxUIWidget *widget)
     {
@@ -563,6 +626,15 @@ public:
         embeddedWidgets.clear();        //does not deallocate widgets, just deletes the pointers and sets the size to zero
     }
     
+    
+    ofEvent<ofxUIEventArgs> newGUIEvent;
+    
+    //borg
+    ofEvent<ofxUIEventArgs> widgetEvent;
+    ofxUIEventArgs *GUIevent;
+    
+    
+
 protected:    
 	ofxUIWidget *parent; 
 	ofxUIRectangle *rect; 	
@@ -597,7 +669,17 @@ protected:
     ofColor color_padded_rect; 
 	ofColor color_padded_rect_outline;
     
-    vector<ofxUIWidget *> embeddedWidgets; 
+    vector<ofxUIWidget *> embeddedWidgets;
+    
+    /*
+     Borg
+     */
+    string uid;//unique id
+    //string value;//distinct from name which is used for rendering
+    
+    
+    
+
     
 #ifdef TARGET_OPENGLES          //iOS Mode
     int touchId;     

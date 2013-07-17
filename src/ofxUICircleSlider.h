@@ -101,6 +101,10 @@ public:
         label->setEmbedded(true);        
         increment = .0005;    
         inputDirection = OFX_UI_DIRECTION_SOUTHNORTH;
+        
+        
+        //borg
+        uid = ofToString(ofGetElapsedTimef())+"_"+ofToString(ofRandomf());
     }
     
     

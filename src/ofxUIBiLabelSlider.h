@@ -143,6 +143,9 @@ public:
 		rlabel->setRectParent(rect); 	
 
         increment = fabs(max - min) / 10.0;
+        
+        //borg
+        uid = ofToString(ofGetElapsedTimef())+"_"+ofToString(ofRandomf());
     }
     
     virtual void setDrawPadding(bool _draw_padded_rect)

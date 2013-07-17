@@ -84,7 +84,10 @@ public:
         allowMultiple = false; 
         initToggles(items, _size);         
         autoClose = false; 
-        singleSelected = NULL; 
+        singleSelected = NULL;
+        
+        //borg
+        uid = ofToString(ofGetElapsedTimef())+"_"+ofToString(ofRandomf());
     }
 
     virtual void draw()
@@ -108,11 +111,13 @@ public:
     }
     
     void clearToggles()
-    {        
+    {
+            
         while(toggles.size())
 		{
-			ofxUILabelToggle *t = toggles[0]; 			
-            removeToggle(t->getName());
+            
+			ofxUILabelToggle *t = toggles[0];
+            removeToggle(t);
         }
     }    
     
@@ -148,7 +153,10 @@ public:
         ltoggle->getRect()->y = rect->y+yt; 			        
         ltoggle->getRect()->x = rect->x; 			        
         ltoggle->setVisible(*value); 
-        ltoggle->setLabelVisible(*value);             
+        ltoggle->setLabelVisible(*value);
+        
+        ltoggle->setUID(ofToString(toggles.size()));//size before add, starts at 0 borg
+        
         toggles.push_back(ltoggle);        
         parent->addWidget(ltoggle);
         ltoggle->setParent(this);        
@@ -161,6 +169,102 @@ public:
             close();
         }
     }    
+    
+    
+    /*
+     Borg
+     */
+    
+    
+    void addToggle(string toggleName, bool selected)
+    {
+        float yt = rect->getHeight();
+        
+		for(int i = 0; i < toggles.size(); i++)
+		{
+			ofxUILabelToggle *t = toggles[i];
+            yt +=t->getRect()->getHeight();
+		}
+        
+        ofxUILabelToggle *ltoggle;
+        if(autoSize)
+        {
+            ltoggle = new ofxUILabelToggle(toggleName,false, 0, yt,  size);
+        }
+        else
+        {
+            ltoggle = new ofxUILabelToggle( toggleName, false,rect->getWidth(), rect->getHeight(), 0, yt,  size);
+        }
+        ltoggle->setParent(this);
+        ltoggle->getRect()->setParent(this->getRect());
+        ltoggle->getRect()->y = rect->y+yt;
+        ltoggle->getRect()->x = rect->x;
+        ltoggle->setVisible(value);
+        ltoggle->setLabelVisible(value);
+        
+        
+        //borg, before add, start 0
+        ltoggle->setUID(ofToString(toggles.size()));
+        ltoggle->setValue(selected);
+        
+        
+        
+        
+        
+        toggles.push_back(ltoggle);
+        
+        parent->addWidget(ltoggle);
+        
+ 
+    }
+    
+    //-borg
+    void removeToggle(ofxUIWidget *widget)
+    {
+        ofxUILabelToggle *t = NULL;
+        for(int i = 0; i < toggles.size(); i++)
+        {
+            ofxUILabelToggle *other = (ofxUILabelToggle *)toggles[i];
+            
+            
+            
+            if(other->getUID() == widget->getUID())
+            {
+                t = other;
+                toggles.erase(toggles.begin()+i);
+                break;
+            }
+        }
+        for(int i = 0; i < selected.size(); i++)
+        {
+            ofxUILabelToggle *other = (ofxUILabelToggle *)selected[i];
+            if(other->getUID() == widget->getUID())
+            {
+                selected.erase(selected.begin()+i);
+                break;
+            }
+        }
+        if(t != NULL && parent !=NULL)
+        {
+            //cout<<t->getName()<<endl;
+            parent->removeWidget(t);
+            
+            
+            //this updates the dimensions I suppose
+            float yt = rect->getHeight();
+            for(int i = 0; i < toggles.size(); i++)
+            {
+                ofxUILabelToggle *t = toggles[i];
+                t->setParent(this);
+                t->getRect()->setParent(this->getRect());
+                t->getRect()->y = yt;
+                t->getRect()->x = 0;
+                yt +=t->getRect()->getHeight();
+            }
+            
+        }
+        
+    }
     
     void removeToggle(string toggleName)
     {
@@ -246,7 +350,8 @@ public:
                 ltoggle = new ofxUILabelToggle(0, ty, rect->getWidth(), false, tname, _size);                 
             }
             ltoggle->setVisible(*value); 
-            ltoggle->setLabelVisible(*value);             
+            ltoggle->setLabelVisible(*value);
+            ltoggle->setUID(ofToString(i));//borg
 			toggles.push_back(ltoggle); 
             ty+=20; 
 		}        

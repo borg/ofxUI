@@ -34,7 +34,9 @@ class ofxUIWidgetWithLabel : public ofxUIWidget
 public:
     ofxUIWidgetWithLabel() : ofxUIWidget() 
     {        
- 
+        //borg
+        uid = ofToString(ofGetElapsedTimef())+"_"+ofToString(ofRandomf());
+        
     }
     
     virtual ~ofxUIWidgetWithLabel() 

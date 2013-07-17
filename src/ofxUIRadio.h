@@ -205,6 +205,9 @@ public:
 		{
 			parent->triggerEvent(child); 
 		}
+        //borg
+        GUIevent->widget = child; 
+        ofNotifyEvent(widgetEvent,*GUIevent,this);
 	}	
     
     

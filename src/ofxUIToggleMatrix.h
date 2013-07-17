@@ -28,6 +28,8 @@
 #include "ofxUIWidgetWithLabel.h"
 #include "ofxUIToggle.h"
 
+
+
 class ofxUIToggleMatrix : public ofxUIWidgetWithLabel
 {
 public:
@@ -57,23 +59,61 @@ public:
 		label->setParent(label); 
 		label->setRectParent(rect); 
         label->setEmbedded(true);
+        //borg
+        setDimensions(w,h,rows, cols);
         
-        ofPoint pos = ofPoint(0,0); 
-		for(int i = 0; i < rows; i++)
-        {
-            for(int j = 0; j < cols; j++)
-            {            
-                ofxUIToggle *toggle = new ofxUIToggle(pos.x,pos.y, w, h, false, (name+"("+ofToString(i,0)+","+ofToString(j,0)+")")); 
-                toggle->setLabelVisible(false); 
-                toggles.push_back(toggle);                 
-                pos.x += w+padding; 
-            }
-            pos.y += h+padding; 
-            pos.x = 0;
-        }
-        allowMultiple = true;  
+        allowMultiple = true;
+        
+        //borg
+        uid = ofToString(ofGetElapsedTimef())+"_"+ofToString(ofRandomf());
     }
 
+    
+    //borg to be able to modify on the fly
+    void setDimensions(float w, float h,int _row, int _col){
+        
+        rows = _row;
+        cols = _col;
+        
+
+        if(parent){
+            for(int i = 0; i < toggles.size(); i++){
+              //  parent->removeWidget(toggles[i]->getLabel());
+                parent->removeWidget(toggles[i]);
+            }
+            
+        }
+        toggles.clear();
+        
+       
+        
+        ofPoint pos = ofPoint(0,0);
+		for(int i = 0; i < rows; i++){
+            for(int j = 0; j < cols; j++){
+                ofxUIToggle *toggle = new ofxUIToggle(pos.x,pos.y, w, h, false, (name+"("+ofToString(i,0)+","+ofToString(j,0)+")"));
+                toggle->setLabelVisible(false);
+                toggles.push_back(toggle);
+                pos.x += w+padding;
+                
+                
+                
+				if(parent){
+                    //not the first time
+                    //call canvas update widget instead...nesting hell
+                    /*
+                    ((ofxUICanvas*) parent)->setLabelFont(toggle->getLabel());
+                    ((ofxUICanvas*) parent)->pushbackWidget(toggle);
+                    ((ofxUICanvas*) parent)->pushbackWidget(toggle->getLabel());
+                    ((ofxUICanvas*) parent)->widgetsWithState.push_back(toggle);
+                     */
+                }
+            }
+            pos.y += h+padding;
+            pos.x = 0;
+        }
+   
+    }
+    
     virtual void setDrawPadding(bool _draw_padded_rect)
 	{
 		draw_padded_rect = _draw_padded_rect; 
@@ -143,7 +183,7 @@ public:
         for(int i = 0; i < toggles.size(); i++)
 		{
 			ofxUIToggle *t = toggles[i]; 			
-			t->setParent(this); 
+			t->setParent(this);
 			t->getRect()->setParent(this->getRect()); 
         }
         
@@ -223,6 +263,19 @@ public:
     void setAllowMultiple(bool _allowMultiple)
     {
         allowMultiple = _allowMultiple; 
+    }
+    //Borg
+    static int getRow(ofxUIToggle * toggle){
+        string str = toggle->getName();
+        string sub = str.substr(1,str.size()-1);
+        int row = ofToInt(ofSplitString(sub,",")[0]);
+        return row;
+    }
+    static int getCol(ofxUIToggle * toggle){
+        string str = toggle->getName();
+        string sub = str.substr(1,str.size()-1);
+        int col = ofToInt(ofSplitString(sub,",")[1]);
+        return col;
     }
 
 protected:    //inherited: ofxUIRectangle *rect; ofxUIWidget *parent; 

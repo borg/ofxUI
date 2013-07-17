@@ -224,9 +224,10 @@ enum ofxUIThemeType
 #define OFX_UI_LABEL_DRAW_BACK false
 
 #include "ofxUIRectangle.h"
+#include "ofxUIEventArgs.h"
 #include "ofxUIWidget.h"
 #include "ofxUIWidgetWithLabel.h"
-#include "ofxUIEventArgs.h"
+
 #include "ofxUILabel.h"
 #include "ofxUIFPS.h"
 #include "ofxUISlider.h"

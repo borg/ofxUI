@@ -109,7 +109,10 @@ public:
         draw_back = OFX_UI_LABEL_DRAW_BACK; 
         draw_fill = true; 
 		paddedRect = new ofxUIRectangle(-padding, -padding, padding*2.0, padding*2.0);
-		paddedRect->setParent(rect); 
+		paddedRect->setParent(rect);
+        
+        //borg
+        uid = ofToString(ofGetElapsedTimef())+"_"+ofToString(ofRandomf());
     }
     
     void drawBack()

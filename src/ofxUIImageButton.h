@@ -84,7 +84,10 @@ public:
         setValue(*_value); 
         
         img = new ofImage(); 
-        img->loadImage(_pathURL);         
+        img->loadImage(_pathURL);
+        
+        //borg
+        uid = ofToString(ofGetElapsedTimef())+"_"+ofToString(ofRandomf());
     }
 	
     virtual bool hasLabel()

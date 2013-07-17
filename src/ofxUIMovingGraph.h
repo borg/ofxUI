@@ -58,7 +58,10 @@ public:
         max = _max; 
         min = _min; 		
         scale = rect->getHeight()*.5; 
-        inc = rect->getWidth()/((float)bufferSize-1.0);         
+        inc = rect->getWidth()/((float)bufferSize-1.0);
+        
+        //borg
+        uid = ofToString(ofGetElapsedTimef())+"_"+ofToString(ofRandomf());
     }
     
     virtual void drawFill()

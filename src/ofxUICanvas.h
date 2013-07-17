@@ -140,9 +140,12 @@ public:
         widgetAlign = OFX_UI_ALIGN_LEFT;
         widgetFontSize = OFX_UI_FONT_MEDIUM;
 
-		GUIevent = new ofxUIEventArgs(this);
+		//GUIevent = new ofxUIEventArgs(this);
 		enabled = false;
-		enable();        
+		enable();
+        
+        //borg
+        uid = ofToString(ofGetElapsedTimef())+"_"+ofToString(ofRandomf());
     }
     
     void copyCanvasStyle(ofxUICanvas *styler)
@@ -890,8 +893,14 @@ public:
     {		        
         for(int i = 0; i < widgets.size(); i++)
         {
-            if(widgets[i]->isVisible()) widgets[i]->mouseReleased(x, y, button); 
-        }    
+            if(widgets[i] != NULL){
+                if(widgets[i]->isVisible()){
+                    widgets[i]->mouseReleased(x, y, button);
+                }
+            }else{
+                cout<<"BUG FIX CRAP POINTERS IN UIWIDGETS"<<endl;
+            }
+        }
     }
 	
     void onWindowResized(ofResizeEventArgs& data) 
@@ -1133,9 +1142,15 @@ public:
 		for(int i = 0; i < widgets.size(); i++)
 		{
 			ofxUIWidget *w = widgets[i];
+            if(w){
 			removeWidget(w);
+            }
 		}
-        widgets.clear(); 
+        widgets.clear();
+        if(lastAdded){
+           // delete lastAdded;
+            lastAdded =0;
+        }
     }
     
     void removeWidget(ofxUIWidget *widget)
@@ -1147,36 +1162,98 @@ public:
         //for the map
         map<string, ofxUIWidget*>::iterator it;        
         it=widgets_map.find(widget->getName());
-        if(it != widgets_map.end())
-        {
+        if(it != widgets_map.end()){
 //            cout << "FOUND IT IN MAP, DELETING" << endl;
-            widgets_map.erase(it);     
+            widgets_map.erase(it);
+         
         }
         
+        //http://stackoverflow.com/questions/8597240/how-to-delete-an-element-from-a-vector-while-looping-over-it
+        //different ways of deleting from vectors without crashing
+        //one: only increase index when not deleting
+        int i = 0;
+        while ( i < widgetsWithState.size() ) {
+            ofxUIWidget *other = widgetsWithState[i];
+            if(widget->getUID() == other->getUID()){
+                widgetsWithState.erase( widgetsWithState.begin() + i );
+            } else {
+                ++i;
+            }
+        }
+        
+        //two: have a condition ad pass function pointer
+        //widgetsWithState.erase( std::remove_if( v.begin(), v.end(), pred ), v.end() );
+        
+        /*
         //for the widgets with state         
         for(int i = 0; i < widgetsWithState.size(); i++)
         {
-            ofxUIWidget *other = widgetsWithState[i]; 
-            if(widget->getName() == other->getName())
-            {
-//                cout << "FOUND IT IN WIDGETS WITH STATE, DELETING" << endl;
-                widgetsWithState.erase(widgetsWithState.begin()+i);                
-                break; 
+            ofxUIWidget *other = widgetsWithState[i];
+            if(other != NULL && widget != NULL){
+                    
+                try{
+                    cout<<i<<" "<<widget->getID()<<" "<<other->getID()<<endl;
+                    if(widget->getUID() == other->getUID()){
+                        //cout << "FOUND IT IN WIDGETS WITH STATE, DELETING" << endl;
+                        widgetsWithState.erase(widgetsWithState.begin()+i);
+                        
+                        break; 
+                    }
+                }
+                catch ( ... ) {
+                    
+                    cout << "uiwidget error 1: kind "<<endl;
+                    break;
+                // return;
+                }
+            }
+        }*/
+        
+        
+        
+        //repeat for all widgets
+        
+        i = 0;
+        while ( i < widgets.size() ) {
+            ofxUIWidget *other = widgets[i];
+            if(widget->getUID() == other->getUID()){
+                widgets.erase( widgets.begin() + i );
+            } else {
+                ++i;
             }
         }
+        
+        /*
         vector<ofxUIWidget *>::iterator wit;
         //for all the widgets 
-        for(wit=widgets.begin(); wit != widgets.end(); wit++)
-        {
+        for(wit=widgets.begin(); wit != widgets.end(); wit++){
             ofxUIWidget *other = *wit;
-//            cout << other->getName() << endl;                     
-            if(widget->getName() == other->getName())
-            {
-//                cout << "FOUND IT\t" << other->getName() << " " << widget->getName() << endl; 
-                widgets.erase(wit);                             
-                break; 
+           
+            if(other != NULL && widget != NULL){
+                //BUG WAS HERE. Using name caues exc_bad_access when you have more widgets with the same name...which is very common...like very common
+                
+                //ofxUILabel *test = dynamic_cast<ofxUILabel *> (widget);
+                
+                //if(test!=NULL){
+                //    cout << "FOUND IT\t" << other->getName() << endl;
+               // }                
+                
+                            
+                         
+                try{
+                if(widget->getUID() == other->getUID()){
+     //               cout << "FOUND IT\t" << other->getName() << " " << widget->getName() << endl;
+                      widgets.erase(wit);
+                    break; 
+                }
+                }
+                catch ( ... ) {
+                    cout << "uiwidget error 2"<<endl;
+                     break;
+                   // return;
+                }
             }
-        }
+        }*/
         
         if(widget->hasLabel())
         {
@@ -1185,7 +1262,9 @@ public:
             ofxUILabel *label = wwl->getLabelWidget();
             if(widget->getKind() != OFX_UI_WIDGET_LABEL && widget->getKind() != OFX_UI_WIDGET_FPS)
             {
-                removeWidget(label);
+                if(label){
+                    removeWidget(label);
+                }
             }
         }
         
@@ -1196,6 +1275,7 @@ public:
         widget->clearEmbeddedWidgets();
 
         delete widget;
+        widget = 0;//borg
     }    
 
     void addWidget(ofxUIWidget *widget)
@@ -1267,7 +1347,7 @@ public:
 				ofxUILabelToggle *t = toggles[i]; 
 				ofxUILabel *l2 = (ofxUILabel *) t->getLabel();
 				setLabelFont(l2); 	
-                pushbackWidget(l2); 					
+                pushbackWidget(l2);
                 pushbackWidget(t); 
                 widgetsWithState.push_back(t);             
 			}            
@@ -1327,6 +1407,145 @@ public:
 		pushbackWidget(widget);        
     }
 	
+    
+    
+    //borg update nested widget with updated children
+    //TODO: This looks dangerous on second thought
+    void updateWidget(ofxUIWidget *widget)
+	{
+        
+        //return;
+        
+        widget->setPadding(padding);
+        for(int i = 0; i < widget->getEmbeddedWidgetsSize(); i++)
+        {
+            ofxUIWidget *child = widget->getEmbeddedWidget(i);
+            this->addWidget(child);
+            child->setRectParent(widget->getRect());
+        }
+        
+        if(widget->hasLabel())
+        {
+            ofxUIWidgetWithLabel *wwl = (ofxUIWidgetWithLabel *) widget;
+            ofxUILabel *label = wwl->getLabelWidget();
+            setLabelFont(label);
+            setWidgetColor(label);
+            if(widget->getKind() != OFX_UI_WIDGET_LABEL && widget->getKind() != OFX_UI_WIDGET_FPS)
+            {
+                pushbackWidget(label);
+            }
+        }
+        
+        if(widget->getKind() == OFX_UI_WIDGET_SLIDER_H || widget->getKind() == OFX_UI_WIDGET_SLIDER_V || widget->getKind() == OFX_UI_WIDGET_BILABELSLIDER || widget->getKind() == OFX_UI_WIDGET_MINIMALSLIDER || widget->getKind() == OFX_UI_WIDGET_CIRCLESLIDER || widget->getKind() == OFX_UI_WIDGET_IMAGESLIDER_H || widget->getKind() == OFX_UI_WIDGET_IMAGESLIDER_V || widget->getKind() == OFX_UI_WIDGET_MULTIIMAGESLIDER_H || widget->getKind() == OFX_UI_WIDGET_MULTIIMAGESLIDER_V)
+		{
+            if(widget->getKind() == OFX_UI_WIDGET_BILABELSLIDER)
+            {
+                ofxUIBiLabelSlider *biSlider = (ofxUIBiLabelSlider *) widget;
+                ofxUILabel *rlabel = (ofxUILabel *) biSlider->getRightLabel();
+                setLabelFont(rlabel);
+                pushbackWidget(rlabel);
+            }
+            
+            widgetsWithState.push_back(widget);
+		}
+		else if(widget->getKind() == OFX_UI_WIDGET_2DPAD)
+		{
+            widgetsWithState.push_back(widget);
+		}
+		else if(widget->getKind() == OFX_UI_WIDGET_IMAGE)
+		{
+		}
+		else if(widget->getKind() == OFX_UI_WIDGET_IMAGESAMPLER)
+		{
+            widgetsWithState.push_back(widget);
+		}
+		else if(widget->getKind() == OFX_UI_WIDGET_RSLIDER_H || widget->getKind() == OFX_UI_WIDGET_RSLIDER_V)
+		{
+            widgetsWithState.push_back(widget);
+		}
+		else if(widget->getKind() == OFX_UI_WIDGET_ROTARYSLIDER)
+		{
+            widgetsWithState.push_back(widget);
+		}
+		else if(widget->getKind() == OFX_UI_WIDGET_BUTTON || widget->getKind() ==  OFX_UI_WIDGET_LABELBUTTON || widget->getKind() == OFX_UI_WIDGET_LABELTOGGLE || widget->getKind() == OFX_UI_WIDGET_MULTIIMAGEBUTTON || widget->getKind() == OFX_UI_WIDGET_MULTIIMAGETOGGLE || widget->getKind() == OFX_UI_WIDGET_CUSTOMIMAGEBUTTON)
+		{
+            if(widget->getKind() != OFX_UI_WIDGET_BUTTON && widget->getKind() != OFX_UI_WIDGET_LABELBUTTON && widget->getKind() != OFX_UI_WIDGET_MULTIIMAGEBUTTON && widget->getKind() != OFX_UI_WIDGET_CUSTOMIMAGEBUTTON)
+            {
+                widgetsWithState.push_back(widget);
+            }
+		}
+        else if(widget->getKind() == OFX_UI_WIDGET_DROPDOWNLIST)
+        {
+			ofxUIDropDownList *list = (ofxUIDropDownList *) widget;
+            vector<ofxUILabelToggle *> toggles = list->getToggles();
+			for(int i = 0; i < toggles.size(); i++)
+			{
+				ofxUILabelToggle *t = toggles[i];
+				ofxUILabel *l2 = (ofxUILabel *) t->getLabel();
+				setLabelFont(l2);
+                pushbackWidget(l2);
+                pushbackWidget(t);
+                widgetsWithState.push_back(t);
+			}
+        }
+		else if(widget->getKind() == OFX_UI_WIDGET_TEXTINPUT)
+		{
+            widgetsWithState.push_back(widget);
+		}
+		else if(widget->getKind() == OFX_UI_WIDGET_NUMBERDIALER)
+		{
+            widgetsWithState.push_back(widget);
+		}
+		else if(widget->getKind() == OFX_UI_WIDGET_TOGGLE)
+		{
+            widgetsWithState.push_back(widget);
+		}
+		else if(widget->getKind() == OFX_UI_WIDGET_RADIO)
+		{
+			ofxUIRadio *radio = (ofxUIRadio *) widget;
+			vector<ofxUIToggle *> toggles = radio->getToggles();
+			
+			for(int i = 0; i < toggles.size(); i++)
+			{
+				ofxUIToggle *t = toggles[i];
+				ofxUILabel *l2 = (ofxUILabel *) t->getLabel();
+				setLabelFont(l2);
+				pushbackWidget(t);
+				pushbackWidget(l2);
+                
+                widgetsWithState.push_back(t);
+			}
+		}
+        else if(widget->getKind() == OFX_UI_WIDGET_TOGGLEMATRIX)
+		{
+			ofxUIToggleMatrix *matrix = (ofxUIToggleMatrix *) widget;
+			vector<ofxUIToggle *> toggles = matrix->getToggles();
+			
+			for(int i = 0; i < toggles.size(); i++)
+			{
+				ofxUIToggle *t = toggles[i];
+				ofxUILabel *l2 = (ofxUILabel *) t->getLabel();
+				setLabelFont(l2);
+				pushbackWidget(t);
+				pushbackWidget(l2);
+                
+                widgetsWithState.push_back(t);
+			}
+		}
+        else if(widget->getKind() == OFX_UI_WIDGET_IMAGETOGGLE)
+        {
+            widgetsWithState.push_back(widget);
+        }
+        
+        setWidgetColor(widget);
+		widget->setParent(this);
+		widget->setRectParent(this->rect);
+		//pushbackWidget(widget);
+    }
+    
+    
+    
+    
     ofxUIWidget* addWidgetPosition(ofxUIWidget *widget, 
                                    ofxWidgetPosition position = OFX_UI_WIDGET_POSITION_DOWN,
                                    ofxWidgetAlignment align = OFX_UI_ALIGN_LEFT, 
@@ -2250,6 +2469,7 @@ public:
         checkForKeyFocus(child);
         GUIevent->widget = child; 		
         ofNotifyEvent(newGUIEvent,*GUIevent,this);
+                
 	}
 	    
     void setUIColors(ofColor &cb, ofColor &co, ofColor &coh, ofColor &cf, ofColor &cfh, ofColor &cp, ofColor &cpo)
@@ -3018,6 +3238,18 @@ public:
         rect->y = y;
     }
     
+    /*
+     Borg added, Why not in original?
+     */
+    virtual void setSize(int w, int h){
+        rect->setWidth(w);
+        rect->setHeight(h);
+        paddedRect->width = rect->width+padding*2;
+        paddedRect->height = rect->height+padding*2;
+    }
+    
+    
+    
 	void setDrawPadding(bool _draw_padded_rect)
 	{
 		draw_padded_rect = _draw_padded_rect; 
@@ -3063,7 +3295,9 @@ public:
         return widgetToReturn;                                         
     }
 	
-	ofEvent<ofxUIEventArgs> newGUIEvent;
+	//ofEvent<ofxUIEventArgs> newGUIEvent;
+    
+   
 	
 protected:    
     
@@ -3090,7 +3324,7 @@ protected:
 	ofTrueTypeFont *font_medium; 		
 	ofTrueTypeFont *font_small;
  	
-	ofxUIEventArgs *GUIevent; 
+	//ofxUIEventArgs *GUIevent;
     int state;
     bool hasSharedResources;
     bool autoDraw;

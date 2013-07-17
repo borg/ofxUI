@@ -153,7 +153,11 @@ public:
         {
             imageRect = new ofxUIRectangle(0,handleHalfHeight,rect->getWidth(), rect->getHeight()-handle->getHeight());            
         }
-        imageRect->setParent(rect);     
+        imageRect->setParent(rect);
+        
+        
+        //borg
+        uid = ofToString(ofGetElapsedTimef())+"_"+ofToString(ofRandomf());
     }
     
     ~ofxUIMultiImageSlider()

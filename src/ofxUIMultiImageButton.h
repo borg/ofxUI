@@ -107,8 +107,11 @@ public:
         
         back = new ofImage();    back->loadImage(_pathURL);         
         over = new ofImage();   over->loadImage(coreURL+"over"+extension);         
-        on = new ofImage();     on->loadImage(coreURL+"on"+extension);         
-    }       
+        on = new ofImage();     on->loadImage(coreURL+"on"+extension);
+        
+        //borg
+        uid = ofToString(ofGetElapsedTimef())+"_"+ofToString(ofRandomf());
+    }
     
     void drawBack()                     //NORMAL
     {
